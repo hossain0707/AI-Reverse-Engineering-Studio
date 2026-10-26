@@ -1,172 +1,214 @@
 <div align="center">
-  <img src="src/ares_studio/resources/ares.svg" alt="ARES Studio symbol" width="82" />
+
+<img src="assets/ares-pipeline.svg" alt="ARES Studio animated overview: authorized binary inspection, optional local analysis, and reproducible reports." width="100%" />
 
 # ARES Studio
+### AI Reverse Engineering Studio
 
-**AI Reverse Engineering Studio**
+**Local-first binary intelligence for developers, security researchers, and forensic analysts.**
 
-Local-first binary inspection and AI-assisted software understanding for Windows, macOS, and Linux.
+Explore executable structure, reason about disassembly, optionally decompile with Ghidra, and use a local language model to document findings — without sending your binaries to a hosted analysis service.
 
-[Getting Started](#getting-started) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
+<p>
+  <a href="https://github.com/hossain0707/AI-Reverse-Engineering-Studio/actions/workflows/ci-release.yml"><img alt="Build and test status" src="https://github.com/hossain0707/AI-Reverse-Engineering-Studio/actions/workflows/ci-release.yml/badge.svg?branch=main" /></a>
+  <img alt="Engineering preview" src="https://img.shields.io/badge/release-0.1.0%20preview-4E8AC6" />
+  <img alt="Supported systems" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-303E57" />
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-3A625B" />
+  <img alt="Local-first" src="https://img.shields.io/badge/processing-local%20first-2F7A70" />
+</p>
 
-![Version](https://img.shields.io/badge/version-0.1.0-2387d9?style=flat-square)
-![Python](https://img.shields.io/badge/Python-3.11%2B-294765?style=flat-square)
-![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-294765?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-294765?style=flat-square)
+[**Installation**](#installation) · [**Capabilities**](#capabilities) · [**Architecture**](#architecture) · [**Security**](#security-and-trust-boundaries) · [**Development**](#development-and-verification) · [**Roadmap**](#roadmap)
 
 </div>
 
 ---
 
-## Understand the binary. Keep the evidence local.
+> [!IMPORTANT]
+> **Engineering preview, not a certified production release.** Source analysis, CLI functionality, and automated tests are implemented. Windows, macOS, and Linux distributions are produced by CI and must be checked individually for successful builds and native runtime behavior. Unsigned/unnotarized artifacts are not production-certified. There is no safe-execution sandbox for malicious binaries.
 
-ARES Studio is an independent, open-source desktop workspace for inspecting executable formats and forming defensible reverse-engineering hypotheses. The desktop app is intended for developers, security researchers, students, and forensic teams working with software they are authorized to inspect.
+## Why ARES Studio?
 
-The built-in inspector makes useful observations without executing the analyzed program. Optional integrations connect an existing **Ghidra** installation for decompilation and a locally running **Ollama** model for concise, evidence-aware explanations.
+Traditional static analysis produces large volumes of low-level data. ARES Studio organizes a **read-only first pass** into a coherent desktop workspace and lets the analyst selectively add local tooling where deeper context is needed.
 
-> **Release status:** v0.1.0 engineering preview. Source inspection and automated unit tests are implemented; native installers require GitHub Actions builds and physical OS validation. It is not an execution sandbox or certified malware-analysis appliance.
+- **Evidence before inference:** hashes, headers, mapped sections, strings, and instructions are distinct from AI-generated commentary.
+- **Private by design:** the built-in core does not execute the selected binary, collect telemetry, or upload samples.
+- **Bring your own tools:** opt into an existing Ghidra installation or an Ollama model running on loopback.
+- **Portable workflow:** one Qt codebase with dedicated Windows, macOS, and Linux packaging jobs.
+- **Reproducible hand-off:** export structured JSON or readable Markdown for analysis notes.
 
-## Product capabilities
+## Capabilities
 
-| Workspace | Capability | Operation |
-| --- | --- | --- |
-| **Overview** | PE / ELF / Mach-O recognition, sections, architecture, entry point and SHA-256 | Built in |
-| **Strings Explorer** | Bounded printable strings with real-time filter | Built in |
-| **Disassembly** | Machine-code instructions at the mapped entry point | Optional Capstone |
-| **Ghidra Analysis** | Function discovery and decompiled snippets | Optional local Ghidra |
-| **Local AI Assistant** | Analyst explanations from binary metadata and optional decompilation | Optional local Ollama |
-| **Reports & Export** | Export machine-readable JSON or Markdown analysis reports | Built in |
+| Workspace | What it provides | Availability |
+| :-- | :-- | :-- |
+| **Overview** | Format identification (PE, ELF, Mach-O), architecture, size, sampled entropy, sections, SHA-256 | Built in |
+| **Strings Explorer** | Bounded printable-string extraction and in-app filtering | Built in |
+| **Disassembly** | Entry-point instruction view with supported architectures | Optional [Capstone](https://www.capstone-engine.org/) |
+| **Ghidra Analysis** | Function discovery and bounded decompiled text | Optional [Ghidra](https://github.com/NationalSecurityAgency/ghidra) |
+| **Local AI Assistant** | Context-aware natural-language explanations based on local observations | Optional [Ollama](https://ollama.com/) |
+| **Reports & Export** | JSON or Markdown analysis summaries | Built in |
 
-**Architecture at a glance**
+**Deliberate limits:** ARES does not claim automated complete source recovery, reliable malware verdicts, dynamic execution analysis, or cloud-based inference. AI output is a hypothesis to review, never ground truth.
 
-```mermaid
-flowchart TD
-    B[User-selected binary] --> S[Bounded read-only scanner]
-    S --> H[Hash / headers / sections / strings]
-    H --> UI[ARES Studio workspace]
-    UI --> C[Capstone disassembly]
-    UI --> G[Opt-in Ghidra headless]
-    UI --> O[Opt-in local Ollama]
-    UI --> R[JSON / Markdown export]
-    C --> R
-    G --> R
-    O --> R
-```
+## Installation
 
-The application deliberately does **not** promise behavioral emulation, automatic source recovery, a security verdict, or cloud AI services.
+### Download desktop packages
 
-## Getting started
+**Repository:** [GitHub releases](https://github.com/hossain0707/AI-Reverse-Engineering-Studio/releases) · [Latest CI build artifacts](https://github.com/hossain0707/AI-Reverse-Engineering-Studio/actions/workflows/ci-release.yml)
 
-### Option A — Download a native build
+| Operating system | Planned artifact | CPU architecture | Release caveat |
+| :-- | :-- | :-- | :-- |
+| Windows 10/11 | `ARES-Studio-Setup-0.1.0.exe`, portable `.zip` | x86-64 | Unsigned preview; SmartScreen may prompt |
+| macOS | `ARES-Studio-macos-x64.dmg` | Intel | Unnotarized preview; Gatekeeper may prompt |
+| macOS | `ARES-Studio-macos-arm64.dmg` | Apple Silicon | Unnotarized preview; Gatekeeper may prompt |
+| Ubuntu / Debian | `ares-studio_0.1.0_amd64.deb` | x86-64 | Native compatibility requires verification |
+| Other Linux | `ARES-Studio-Linux-Portable.tar.gz` | x86-64 | Desktop dependencies are distro-specific |
 
-After the CI workflow runs on GitHub, open the repository's **Actions → Test, build and publish** page and download the appropriate artifact. When a version tag is created and its draft release is approved, published assets appear under **Releases**.
+> Packages are **only available if their associated GitHub Actions jobs finish successfully**. Source presence and a workflow definition do not mean installers already exist. The release process intentionally creates a draft release, never an automatically trusted public installer.
 
-| System | Distribution | Notes |
-| --- | --- | --- |
-| Windows 10/11 x64 | NSIS `.exe` installer or portable `.zip` | Unsigned preview; SmartScreen may warn |
-| macOS Intel / Apple Silicon | Separate `.dmg` images | Unsigned/unnotarized; Gatekeeper may warn |
-| Ubuntu/Debian x64 | `.deb` installer | Installs application shortcut |
-| Other x64 Linux | Portable `.tar.gz` | Extract and run `ARES-Studio` from the folder |
+### Run from source
 
-These artifacts must be built by the workflows; this source repository does not contain pre-built binaries.
-
-### Option B — Run from source
-
-Requires Python 3.11+ and a compatible desktop environment.
+**Prerequisites:** Python 3.11+ and a graphical desktop environment.
 
 ```bash
-# Clone after repository publication
-# git clone https://github.com/hossain0707/AI-Reverse-Engineering-Studio.git
-# cd AI-Reverse-Engineering-Studio
-
+git clone https://github.com/hossain0707/AI-Reverse-Engineering-Studio.git
+cd AI-Reverse-Engineering-Studio
 python -m venv .venv
-# On Windows PowerShell: .venv\Scripts\Activate.ps1
-# On macOS/Linux: source .venv/bin/activate
-python -m pip install -e '.[disassembly]'
+```
+
+Activate the environment:
+
+| Platform | Command |
+| :-- | :-- |
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+| macOS / Linux | `source .venv/bin/activate` |
+
+Then install and start the app:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -e ".[disassembly]"
 ares-studio
 ```
 
-To inspect a binary from the terminal without launching a window:
+### Use the CLI without the desktop UI
 
 ```bash
-ares-cli ./path/to/authorized-sample --format json
-ares-cli ./path/to/authorized-sample --out assessment.md
+ares-cli ./samples/authorized-executable --format json
+ares-cli ./samples/authorized-executable --out notes.md
 ```
+
+See [the development guide](docs/DEVELOPMENT.md) for additional developer and packaging details.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["Authorized binary<br/>PE · ELF · Mach-O"] --> B["Read-only static inspector"]
+    B --> C["Metadata · SHA-256<br/>Sections · Strings"]
+    C --> D["ARES desktop workspace"]
+    D --> E["Entry-point disassembly<br/>Capstone (optional)"]
+    D --> F["Headless decompilation<br/>Ghidra (opt-in)"]
+    D --> G["Local AI analysis<br/>Ollama loopback (opt-in)"]
+    C --> H["JSON / Markdown report"]
+    E --> H
+    F --> H
+    G --> H
+    style A fill:#14213b,color:#eaf4ff,stroke:#4976ab
+    style B fill:#13354b,color:#eaf4ff,stroke:#42a9d6
+    style D fill:#1f2d4a,color:#eaf4ff,stroke:#7b93ed
+    style H fill:#153c3a,color:#eafffa,stroke:#3db59f
+```
+
+The pipeline is intentionally **explicit and analyst-controlled**. Ghidra and Ollama are not started simply because a sample is opened. Read [Architecture](docs/ARCHITECTURE.md) for module boundaries and the [Security Policy](SECURITY.md) for operational limitations.
 
 ### Optional Ghidra integration
 
-1. Download and install [Ghidra](https://github.com/NationalSecurityAgency/ghidra) from its official project.
-2. Open ARES Studio, select a binary, and go to **Ghidra Analysis**.
-3. Select the Ghidra installation root directory (containing `support/analyzeHeadless`).
-4. Confirm the separate analyzer trust-boundary warning, then run decompilation.
-5. Review the bounded function list and decompiled snippets. Export a report if required.
+1. Install Ghidra from the [official repository](https://github.com/NationalSecurityAgency/ghidra).
+2. Open an authorized binary in ARES Studio and navigate to **Ghidra Analysis**.
+3. Point ARES Studio at the Ghidra installation directory containing `support/analyzeHeadless`.
+4. Review the separate trust-boundary warning and explicitly start the operation.
+5. Inspect the returned functions and decompilation snippets before exporting.
 
-Ghidra is a third-party executable that inspects untrusted input. ARES does not sandbox it. Use an isolated VM for hostile samples. Only inspect files with authorization.
+**Risk:** Ghidra processes untrusted inputs in a separate executable, but ARES does **not** place Ghidra in an isolation sandbox. Use a properly isolated VM for hostile artifacts.
 
-### Optional private AI explanations
+### Optional local AI integration
 
-1. Install [Ollama](https://ollama.com) and start its **local** server.
-2. Download any locally supported coding model, for example `ollama pull qwen2.5-coder:7b`.
-3. Enter the installed model name in **Local AI Assistant** and keep the endpoint as `http://127.0.0.1:11434`.
-4. Select **Explain current binary**. Interpret the response as unverified guidance, not an authoritative result.
+```bash
+# Install and start Ollama locally first.
+ollama pull qwen2.5-coder:7b
+```
 
-Only local loopback HTTP endpoints are accepted by ARES. No API keys, external cloud model, or upload are required. Model download itself uses Ollama's own distribution channel.
+In **Local AI Assistant**, set the model to your installed model and the endpoint to `http://127.0.0.1:11434`, then select **Explain current binary**.
 
-## Design principles
+ARES accepts loopback HTTP endpoints only; no cloud API credentials are required. Model downloads are performed separately by Ollama. Verify generated claims against the observed evidence.
 
-- **Local by default:** no application telemetry, signup, external AI API or binary upload.
-- **Reproducibility:** SHA-256 and deterministic, structured report content with explicit scan limitations.
-- **Analyst agency:** clear distinction between observed metadata and suggestions from a language model.
-- **Guardrails:** file-size and scan limits, subprocess timeouts, capped output, explicit Ghidra opt-in.
-- **Cross-platform:** a Qt UI from a shared Python codebase; native packaging per operating system.
-- **Transparent scope:** no fake binary execution, fake screenshots, fabricated detections, or unsupported claims.
+## Security and trust boundaries
 
-## Repository structure
+| Boundary | Current behavior |
+| :-- | :-- |
+| Executable inspection | Static and read-only; selected programs are not run |
+| Memory / scan size | Configured bounds, limits, and output caps |
+| Ghidra subprocess | Explicit opt-in, timeout, temporary project; **not sandboxed** |
+| AI connectivity | Explicit opt-in; loopback-only Ollama endpoint |
+| Data transmission | No first-party telemetry or automatic sample upload |
+| Malware safety | **Not** a certified containment or malware-execution system |
+
+Only analyze binaries you have the right to inspect. For vulnerabilities, use private reporting instructions in [SECURITY.md](SECURITY.md); do not publish exploit details against third-party targets.
+
+## Development and verification
+
+```bash
+python -m pip install -e ".[dev]"
+python -m ruff check .
+python -m pytest -q
+```
+
+CI runs linting and tests before creating per-platform packages. The [build workflow](.github/workflows/ci-release.yml) uploads installation artifacts from successful runner jobs. Tag builds prepare a **draft release** for manual review.
+
+**Before declaring production-ready:** pass native launch, installation and removal, application functionality, dependency compatibility, Ghidra integration, signed distribution, macOS notarization, security fuzzing, and end-to-end smoke testing. See [DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+<details>
+<summary><strong>Repository structure</strong></summary>
 
 ```text
 src/ares_studio/
-  app.py             Desktop interface and background workers
-  core.py            Static PE / ELF / Mach-O inspector
-  disassembly.py     Optional Capstone decoder
-  ghidra.py          Optional Ghidra headless orchestrator
-  ollama.py          Loopback-only local AI adapter
-  reporting.py       Markdown and JSON report serialization
-  cli.py             Headless command-line interface
-scripts/ghidra/      Companion Jython export script
-packaging/           Windows NSIS and Linux desktop integration
-.github/workflows/   Automated test and native-build pipeline
-tests/               Parser, local endpoint and report tests
-docs/                Architecture and engineering documentation
+  app.py                  Qt desktop workspace
+  core.py                 Static PE / ELF / Mach-O inspection
+  disassembly.py          Optional Capstone instruction decoding
+  ghidra.py               Optional Ghidra adapter
+  ollama.py               Local-only model adapter
+  reporting.py            Report generation
+  cli.py                  Command-line interface
+  resources/              Icons and Ghidra companion script
+assets/                    README visual assets
+packaging/                 Native installation metadata
+scripts/                   Developer and publishing utilities
+tests/                     Automated regression checks
+docs/                      Engineering, design, and operating notes
+.github/workflows/         CI and release automation
 ```
 
-## Quality and release discipline
-
-Local verification:
-
-```bash
-python -m pip install -e '.[dev]'
-python -m pytest -q
-python -m ruff check .
-```
-
-Each CI build runs tests and then packages on native GitHub runners. Tagged releases produce a **draft**, not an automatically published or attested release. See [the development guide](docs/DEVELOPMENT.md) for installer signing, smoke testing, and remaining production gates.
+</details>
 
 ## Roadmap
 
-- [x] Core read-only binary inspector and reports
-- [x] Desktop navigation, string filtering and background processing
-- [x] Optional local decompiler and LLM integrations
-- [x] Cross-platform packaging definitions
-- [ ] Verify app functionality and signed installers on all target OS/CPU combinations
-- [ ] Test Ghidra integrations across supported releases
-- [ ] Add fuzzing and differential tests against mature parser libraries
-- [x] CI packaging configurations for Intel and Apple Silicon macOS
-- [ ] Verify macOS native binaries and add native ARM Linux builds
-- [ ] Investigate isolate-by-default parser subprocesses for hostile samples
-- [ ] Project/workspace history, annotated symbols, cross-references, and diffing
+- [x] Static binary metadata, bounded strings, SHA-256, and reports
+- [x] Six-workspace Qt desktop UI
+- [x] Optional Ghidra, Capstone, and local Ollama adapters
+- [x] Automated packaging configurations for Windows, macOS (Intel/ARM), and Linux x64
+- [ ] Confirm all native build artifacts and installation smoke tests on their actual platforms
+- [ ] Add signed Windows binaries and signed/notarized macOS distribution
+- [ ] Fuzz format parsers and validate against reference implementations
+- [ ] Test multiple supported Ghidra versions and timeout/error scenarios
+- [ ] Expand binary cross-references, function diffing, and analyst project management
+- [ ] Improve parser isolation for genuinely hostile samples
 
-## Licensing
+## Project and licensing
 
-MIT License © 2026 **Md Najmul Hossain**. See [LICENSE](LICENSE).
+**Author and maintainer:** [Md Najmul Hossain](https://github.com/hossain0707)
 
-ARES Studio is an independent project and is **not affiliated with or endorsed by Ghidra, the NSA, Capstone, or Ollama**. Third-party tools retain their respective licenses.
+- [Contribution guidelines](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md)
+- Licensed under the [MIT License](LICENSE) © 2026 Md Najmul Hossain
+- Independent project, **not affiliated with or endorsed by** Ghidra, NSA, Capstone, or Ollama. Dependencies retain their own licenses.
+
+<div align="center"><sub>Built to help analysts work methodically, privately, and with verifiable evidence.</sub></div>
