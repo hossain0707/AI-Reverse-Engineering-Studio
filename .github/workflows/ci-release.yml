@@ -87,7 +87,7 @@ jobs:
           printf 'Package: ares-studio\nVersion: 0.1.0\nArchitecture: amd64\nMaintainer: Md Najmul Hossain\nDepends: libxcb-cursor0, libxkbcommon-x11-0, libgl1\nDescription: Local-first AI reverse engineering desktop studio\n' > pkg/DEBIAN/control
           dpkg-deb --build --root-owner-group pkg "dist/ares-studio_0.1.0_amd64.deb"
           tar -C dist -czf "dist/ARES-Studio-Linux-Portable.tar.gz" ARES-Studio
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: runner.os == 'Windows'
         with:
           name: windows-packages
@@ -95,13 +95,13 @@ jobs:
             dist/ARES-Studio-Setup-0.1.0.exe
             dist/ARES-Studio-Windows-Portable.zip
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: runner.os == 'macOS'
         with:
           name: ${{ matrix.label }}-package
           path: dist/ARES-Studio-${{ matrix.label }}.dmg
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: runner.os == 'Linux'
         with:
           name: linux-packages
