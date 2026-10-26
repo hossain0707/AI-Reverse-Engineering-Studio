@@ -1,0 +1,77 @@
+name: Publish ARES Studio v0.1.0 preview
+
+# One-shot release: this workflow only runs when its own file is first added/changed.
+# It imports artifacts from an already successful native build; it never re-labels failed jobs.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-v0.1.0.yml"
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: ares-studio-v0.1.0-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'hossain0707/AI-Reverse-Engineering-Studio'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm source build is successful and download native distributions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA="3e67f07b06e92f07ae491b17879b1ae46c4788d5"
+          SOURCE_RUN=40253690685
+          actual_sha="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq '.head_sha')"
+          actual_result="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq '.conclusion')"
+          test "$actual_sha" = "$SOURCE_SHA"
+          test "$actual_result" = "success"
+          gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" --dir release-files
+
+          # Fail closed if any platform output is missing.
+          required=(
+            "ARES-Studio-Setup-0.1.0.exe"
+            "ARES-Studio-Windows-Portable.zip"
+            "ARES-Studio-macos-x64.dmg"
+            "ARES-Studio-macos-arm64.dmg"
+            "ares-studio_0.1.0_amd64.deb"
+            "ARES-Studio-Linux-Portable.tar.gz"
+          )
+          for name in "${required[@]}"; do
+            if ! find release-files -type f -name "$name" | grep -q .; then
+              echo "::error::Missing required release package: $name" >&2
+              exit 1
+            fi
+          done
+          find release-files -type f -printf '%f\n' | sort
+
+      - name: Publish tagged GitHub pre-release and checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA="3e67f07b06e92f07ae491b17879b1ae46c4788d5"
+          if gh release view v0.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::v0.1.0 already has a release; not overwriting it."
+            exit 1
+          fi
+          mapfile -d '' -t packages < <(find release-files -type f -print0)
+          (cd release-files && find . -type f -print0 | sort -z | xargs -0 sha256sum | sed -E 's|\./[^/]+/||') > SHA256SUMS.txt
+          gh release create v0.1.0 "${packages[@]}" SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_SHA" \
+            --title "ARES Studio v0.1.0 — Engineering Preview" \
+            --notes-file RELEASE_NOTES_v0.1.0.md \
+            --prerelease
+          gh release view v0.1.0 --repo "$GITHUB_REPOSITORY" \
+            --json tagName,isPrerelease,isDraft,url,assets
