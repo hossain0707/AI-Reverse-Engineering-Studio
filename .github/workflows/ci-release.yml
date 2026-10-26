@@ -60,20 +60,44 @@ jobs:
           --name ARES-Studio --paths src
           --add-data "src/ares_studio/resources:ares_studio/resources"
           launcher.py
-      - name: Build Windows installer
+      - name: Build Windows installer and portable package
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          choco install nsis -y --no-progress
-          & "C:\Program Files (x86)\NSIS\makensis.exe" "packaging\installer.nsi"
-          Compress-Archive -Path "dist\ARES-Studio\*" -DestinationPath "dist\ARES-Studio-Windows-Portable.zip"
+          $ErrorActionPreference = 'Stop'
+          # Portable distribution is always generated even if the NSIS feed is temporarily unavailable.
+          Compress-Archive -Path "dist\ARES-Studio\*" -DestinationPath "dist\ARES-Studio-Windows-Portable.zip" -Force
+          $nsis = "C:\Program Files (x86)\NSIS\makensis.exe"
+          if (-not (Test-Path $nsis)) {
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+              Write-Host "Installing NSIS (attempt $attempt of 3)"
+              choco install nsis -y --no-progress --limit-output
+              if ((Test-Path $nsis) -and $LASTEXITCODE -eq 0) { break }
+              if ($attempt -lt 3) { Start-Sleep -Seconds 10 }
+            }
+          }
+          if (Test-Path $nsis) {
+            & $nsis "packaging\installer.nsi"
+            if ($LASTEXITCODE -ne 0) { throw "NSIS failed with exit code $LASTEXITCODE" }
+          } else {
+            Write-Warning "NSIS unavailable; portable Windows ZIP is still published. Installer needs a later rebuild."
+          }
       - name: Build macOS disk image
         if: runner.os == 'macOS'
         run: |
           mkdir -p dmg
           cp -R "dist/ARES-Studio.app" dmg/
           ln -s /Applications dmg/Applications
-          hdiutil create -volname "ARES Studio" -srcfolder dmg -ov -format UDZO "dist/ARES-Studio-${{ matrix.label }}.dmg"
+          # DiskImages framework can transiently return 'Resource busy' on hosted macOS.
+          for attempt in 1 2 3; do
+            if hdiutil create -volname "ARES Studio" -srcfolder dmg -ov -format UDZO "dist/ARES-Studio-${{ matrix.label }}.dmg"; then
+              exit 0
+            fi
+            echo "hdiutil attempt ${attempt} failed"
+            if [ "$attempt" -lt 3 ]; then sleep 10; fi
+          done
+          echo "Failed to build disk image after three attempts" >&2
+          exit 1
       - name: Build Linux deb and portable tarball
         if: runner.os == 'Linux'
         run: |
