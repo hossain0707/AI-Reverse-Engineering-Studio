@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 378" role="img" aria-labelledby="title desc">
+<title id="title">ARES Studio — Local-first binary intelligence</title>
+<desc id="desc">Animated visual pipeline from authorized binaries through static inspection into disassembly, optional local Ghidra and Ollama, and reproducible reports. Animation is decorative.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0A1324"/><stop offset="1" stop-color="#111C34"/></linearGradient>
+  <linearGradient id="accent"><stop stop-color="#46B2FF"/><stop offset=".55" stop-color="#9B8CFF"/><stop offset="1" stop-color="#38DDC3"/></linearGradient>
+  <linearGradient id="card"><stop stop-color="#14243C"/><stop offset="1" stop-color="#101B30"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#29415A" stroke-width=".65" opacity=".4"/></pattern>
+  <style>
+    .text{font-family:Inter,Segoe UI,Arial,sans-serif}.wire{fill:none;stroke:#345B85;stroke-width:2;stroke-dasharray:5 8}.runner{fill:#56C5FF;filter:url(#glow)}.outline{fill:url(#card);stroke:#34506F;stroke-width:1.25}.small{fill:#A3B6CC;font-size:12px;letter-spacing:.4px}.head{fill:#EFF7FF;font-size:17px;font-weight:650}.label{font-size:12px;letter-spacing:2.4px;font-weight:700;fill:#79CBFF}
+    .blink{animation:soft-pulse 3s ease-in-out infinite}.scan{animation:scan 5s ease-in-out infinite}
+    @keyframes soft-pulse{50%{opacity:.35}}@keyframes scan{50%{opacity:.45}}
+    @media (prefers-reduced-motion:reduce){.blink,.scan{animation:none}animateMotion{display:none}}
+  </style>
+</defs>
+<rect width="1200" height="378" rx="18" fill="url(#bg)"/>
+<rect width="1200" height="378" rx="18" fill="url(#grid)" opacity=".33"/>
+<rect x="1" y="1" width="1198" height="376" rx="18" fill="none" stroke="#284365"/>
+<circle cx="1112" cy="55" r="165" fill="#245190" opacity=".09"/>
+<circle cx="90" cy="325" r="170" fill="#317C96" opacity=".09"/>
+<path d="M30 14H1170" stroke="url(#accent)" stroke-width="3" opacity=".75"/>
+<text class="text label" x="52" y="59">ARES / REVERSE ENGINEERING WORKSPACE</text>
+<text class="text" x="50" y="109" fill="#F5FAFF" font-size="43" font-weight="760">Understand the binary.</text>
+<text class="text" x="50" y="151" fill="#C1D7ED" font-size="21" font-weight="450">Keep the evidence local.</text>
+<rect x="51" y="171" rx="10" width="171" height="29" fill="#123450" stroke="#2D6D8B"/>
+<circle cx="66" cy="186" r="4" fill="#49D7B7" class="blink"/>
+<text class="text" x="79" y="190" font-size="12" fill="#B5E4EF">READ-ONLY CORE</text>
+<rect x="234" y="171" rx="10" width="170" height="29" fill="#222344" stroke="#494C87"/>
+<text class="text" x="252" y="190" font-size="12" fill="#D3D0FF">OPTIONAL LOCAL AI</text>
+<text class="text small" x="51" y="238">Windows · macOS · Linux</text>
+<text class="text small" x="51" y="260">PE / ELF / Mach-O · Ghidra · Ollama</text>
+<text class="text" x="51" y="327" fill="#8199B8" font-size="12">OPEN SOURCE / ENGINEERING PREVIEW 0.1.0</text>
+<path d="M529 185H585 M735 185H790 M938 185H987" class="wire"/>
+<path d="M529 185H585 M735 185H790 M938 185H987" fill="none" stroke="#56BFFF" stroke-width=".5" opacity=".5"/>
+<circle class="runner" r="3.5"><animateMotion dur="2.1s" path="M529 185H585" repeatCount="indefinite"/></circle>
+<circle class="runner" r="3.5"><animateMotion dur="2.1s" begin=".4s" path="M735 185H790" repeatCount="indefinite"/></circle>
+<circle class="runner" r="3.5"><animateMotion dur="2.1s" begin=".8s" path="M938 185H987" repeatCount="indefinite"/></circle>
+<g class="text">
+<rect class="outline" x="446" y="115" width="136" height="140" rx="13"/>
+<circle cx="514" cy="149" r="19" fill="#153B54" stroke="#397DA6"/>
+<path d="M507 144h14M507 150h14M507 156h8" fill="none" stroke="#8FD7FA" stroke-width="2" stroke-linecap="round"/>
+<text class="head" x="514" y="196" text-anchor="middle">BINARY</text>
+<text class="small" x="514" y="218" text-anchor="middle">Authorized input</text>
+<rect class="outline" x="586" y="115" width="150" height="140" rx="13"/>
+<circle cx="661" cy="149" r="19" fill="#143851" stroke="#397DA6"/>
+<path d="M653 149l5 5 10-11" fill="none" stroke="#8FD7FA" stroke-width="2.6" stroke-linecap="round"/>
+<text class="head" x="661" y="196" text-anchor="middle">INSPECT</text>
+<text class="small" x="661" y="218" text-anchor="middle">Hash · Sections</text>
+<rect class="outline" x="790" y="115" width="150" height="140" rx="13"/>
+<circle cx="865" cy="149" r="19" fill="#252748" stroke="#706EB6"/>
+<path d="M857 151l-5-5 5-5m16 10l5-5-5-5" fill="none" stroke="#B1A5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text class="head" x="865" y="196" text-anchor="middle">ANALYZE</text>
+<text class="small" x="865" y="218" text-anchor="middle">Tools · Local AI</text>
+<rect class="outline" x="987" y="115" width="168" height="140" rx="13"/>
+<circle cx="1071" cy="149" r="19" fill="#123D3E" stroke="#388F83"/>
+<path d="M1063 142h16v16h-16z M1067 147h8M1067 152h7" fill="none" stroke="#85E1C9" stroke-width="2" stroke-linecap="round"/>
+<text class="head" x="1071" y="196" text-anchor="middle">REPORT</text>
+<text class="small" x="1071" y="218" text-anchor="middle">JSON · Markdown</text>
+</g>
+<line x1="445" y1="290" x2="1155" y2="290" stroke="#233D58"/>
+<text class="text" x="449" y="322" fill="#829CBA" font-size="13">Bounded inspection · No binary execution · No automatic cloud upload</text>
+<circle cx="1131" cy="321" r="4" fill="#48D2B2" class="blink"/>
+</svg>
