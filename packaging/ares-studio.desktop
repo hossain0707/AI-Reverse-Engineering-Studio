@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ARES Studio
+Comment=Local-first AI reverse engineering studio
+Exec=ares-studio
+Icon=ares-studio
+Terminal=false
+Categories=Development;Utility;
+StartupNotify=true

@@ -1,0 +1,128 @@
+name: Test, build and publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install tests and application
+        run: python -m pip install -e '.[dev]'
+      - name: Static analysis
+        run: python -m ruff check .
+      - name: Unit tests
+        run: python -m pytest -q
+      - name: CLI smoke test
+        run: python -m ares_studio.cli README.md --format json > /tmp/ares-smoke.json
+
+  package:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x64
+          - os: macos-15-intel
+            label: macos-x64
+          - os: macos-15
+            label: macos-arm64
+          - os: ubuntu-22.04
+            label: linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install packaging dependencies
+        shell: bash
+        run: python -m pip install -e '.[dev]'
+      - name: Create portable desktop bundle
+        shell: bash
+        run: >-
+          pyinstaller --noconfirm --clean --onedir --windowed
+          --name ARES-Studio --paths src
+          --add-data "src/ares_studio/resources:ares_studio/resources"
+          launcher.py
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install nsis -y --no-progress
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "packaging\installer.nsi"
+          Compress-Archive -Path "dist\ARES-Studio\*" -DestinationPath "dist\ARES-Studio-Windows-Portable.zip"
+      - name: Build macOS disk image
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dmg
+          cp -R "dist/ARES-Studio.app" dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "ARES Studio" -srcfolder dmg -ov -format UDZO "dist/ARES-Studio-${{ matrix.label }}.dmg"
+      - name: Build Linux deb and portable tarball
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p pkg/DEBIAN pkg/opt/ares-studio pkg/usr/share/applications pkg/usr/share/icons/hicolor/scalable/apps pkg/usr/bin
+          cp -a dist/ARES-Studio/. pkg/opt/ares-studio/
+          cp packaging/ares-studio.desktop pkg/usr/share/applications/
+          cp src/ares_studio/resources/ares.svg pkg/usr/share/icons/hicolor/scalable/apps/ares-studio.svg
+          chmod 755 pkg/opt/ares-studio/ARES-Studio
+          printf '#!/bin/sh\nexec /opt/ares-studio/ARES-Studio "$@"\n' > pkg/usr/bin/ares-studio
+          chmod 755 pkg/usr/bin/ares-studio
+          printf 'Package: ares-studio\nVersion: 0.1.0\nArchitecture: amd64\nMaintainer: Md Najmul Hossain\nDepends: libxcb-cursor0, libxkbcommon-x11-0, libgl1\nDescription: Local-first AI reverse engineering desktop studio\n' > pkg/DEBIAN/control
+          dpkg-deb --build --root-owner-group pkg "dist/ares-studio_0.1.0_amd64.deb"
+          tar -C dist -czf "dist/ARES-Studio-Linux-Portable.tar.gz" ARES-Studio
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: windows-packages
+          path: |
+            dist/ARES-Studio-Setup-0.1.0.exe
+            dist/ARES-Studio-Windows-Portable.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'macOS'
+        with:
+          name: ${{ matrix.label }}-package
+          path: dist/ARES-Studio-${{ matrix.label }}.dmg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: linux-packages
+          path: |
+            dist/ares-studio_0.1.0_amd64.deb
+            dist/ARES-Studio-Linux-Portable.tar.gz
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-files
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          generate_release_notes: true
+          draft: true

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ares-studio"
+version = "0.1.0"
+description = "Local-first, cross-platform AI Reverse Engineering Studio"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [{name = "Md Najmul Hossain"}]
+keywords = ["reverse-engineering", "ghidra", "ollama", "binary-analysis", "pyside6"]
+dependencies = ["PySide6>=6.7,<7"]
+
+[project.optional-dependencies]
+disassembly = ["capstone>=5.0,<6"]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1", "pyinstaller>=6.10,<7", "capstone>=5.0,<6"]
+
+[project.scripts]
+ares-studio = "ares_studio.app:main"
+ares-cli = "ares_studio.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ares_studio = ["resources/*.svg", "resources/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 105
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
