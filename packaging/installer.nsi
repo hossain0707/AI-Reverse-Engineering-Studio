@@ -3,7 +3,7 @@ Unicode True
 !define APP_NAME "ARES Studio"
 !define APP_VERSION "0.1.0"
 Name "${APP_NAME}"
-OutFile "dist\ARES-Studio-Setup-${APP_VERSION}.exe"
+OutFile "..\dist\ARES-Studio-Setup-${APP_VERSION}.exe"
 InstallDir "$PROGRAMFILES64\ARES Studio"
 RequestExecutionLevel admin
 !insertmacro MUI_PAGE_WELCOME
@@ -15,7 +15,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_LANGUAGE "English"
 Section "Install"
   SetOutPath "$INSTDIR"
-  File /r "dist\ARES-Studio\*"
+  File /r "..\dist\ARES-Studio\*"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   CreateDirectory "$SMPROGRAMS\ARES Studio"
   CreateShortCut "$SMPROGRAMS\ARES Studio\ARES Studio.lnk" "$INSTDIR\ARES-Studio.exe"
